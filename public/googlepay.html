@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ManyChat RTL Extension - Purchase Flow</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h1, h2 {
+            color: #333333;
+        }
+
+        p {
+            color: #666666;
+            line-height: 1.6;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dddddd;
+            text-align: center;
+        }
+
+        .contact-section p {
+            font-size: 14px;
+            color: #555555;
+        }
+
+        .contact-section a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .contact-section a:hover {
+            text-decoration: underline;
+        }
+
+        /* Center Content */
+        .center {
+            text-align: center;
+        }
+
+        /* Google Pay Button Container */
+        .pay-button-container {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Item Selection Screen -->
+        <div id="item-selection" class="section active">
+            <h1>Select Your Product</h1>
+            <p>Upgrade to the ManyChat RTL Extension - Lifetime Access for just <strong>$5</strong>.</p>
+            <img src="https://lh3.googleusercontent.com/CKqt0sI1PGhi7i-53LJfZ8wPo59L_lLquxVfBH9wga_D2ksP06Mgx799cKVYs_1lXVp0eJatXBK6ouSYdn6-dpyLUwY=s60" alt="ManyChat RTL Extension" style="width:100%; max-width:100px;"/>
+            <p><button class="button" onclick="goToSection('pre-purchase')">Buy Now</button></p>
+        </div>
+
+        <!-- Pre-purchase Review Screen -->
+        <div id="pre-purchase" class="section">
+            <h1>Review Your Order</h1>
+            <p><strong>Product:</strong> ManyChat RTL Extension - Lifetime Access</p>
+            <p><strong>Price:</strong> $5.00</p>
+            <p><button class="button" onclick="goToSection('payment-method')">Proceed to Payment</button></p>
+            <p><button class="button" onclick="goToSection('item-selection')">Back</button></p>
+        </div>
+
+        <!-- Payment Method Selection Screen -->
+        <div id="payment-method" class="section">
+            <h1>Select Payment Method</h1>
+            <p>Please choose your preferred payment method:</p>
+            <p><button class="button" onclick="startGooglePay()">Pay with Google Pay</button></p>
+            <!-- You can add more payment methods here -->
+            <p><button class="button" onclick="goToSection('pre-purchase')">Back</button></p>
+        </div>
+
+        <!-- Google Pay Payment Screen -->
+        <div id="google-pay" class="section center">
+            <h1>Processing Payment</h1>
+            <div id="container" class="pay-button-container"></div>
+            <p><button class="button" onclick="goToSection('payment-method')">Cancel</button></p>
+        </div>
+
+        <!-- Post-purchase Confirmation Screen -->
+        <div id="post-purchase" class="section">
+            <h1>Thank You!</h1>
+            <p>Your purchase was successful.</p>
+            <p>You now have unlimited access to the ManyChat RTL Extension.</p>
+            <p>If you have any questions, please contact us.</p>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="contact-section">
+            <p>Need help or have questions? <a href="mailto:zion.dido@gmail.com">Contact us</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Navigation between sections
+        function goToSection(sectionId) {
+            var sections = document.getElementsByClassName('section');
+            for (var i = 0; i < sections.length; i++) {
+                sections[i].classList.remove('active');
+            }
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        // Start Google Pay
+        function startGooglePay() {
+            goToSection('google-pay');
+            loadGooglePay();
+        }
+
+        function loadGooglePay() {
+            const paymentsClient = new google.payments.api.PaymentsClient({ environment: 'TEST' });
+
+            const paymentDataRequest = {
+                apiVersion: 2,
+                apiVersionMinor: 0,
+                allowedPaymentMethods: [{
+                    type: 'CARD',
+                    parameters: {
+                        allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
+                        allowedCardNetworks: ['AMEX', 'DISCOVER', 'JCB', 'MASTERCARD', 'VISA']
+                    },
+                    tokenizationSpecification: {
+                        type: 'PAYMENT_GATEWAY',
+                        parameters: {
+                            gateway: 'example',
+                            gatewayMerchantId: 'exampleMerchantId'
+                        }
+                    }
+                }],
+                merchantInfo: {
+                    merchantName: 'AutomationToolsIL'
+                },
+                transactionInfo: {
+                    totalPriceStatus: 'FINAL',
+                    totalPrice: '5.00',
+                    currencyCode: 'USD',
+                    countryCode: 'US'
+                }
+            };
+
+            paymentsClient.isReadyToPay({
+                apiVersion: 2,
+                apiVersionMinor: 0,
+                allowedPaymentMethods: paymentDataRequest.allowedPaymentMethods
+            })
+            .then(function(response) {
+                if (response.result) {
+                    // Display Google Pay button
+                    const button = paymentsClient.createButton({
+                        onClick: function() {
+                            onGooglePayButtonClicked(paymentsClient, paymentDataRequest);
+                        }
+                    });
+                    document.getElementById('container').innerHTML = '';
+                    document.getElementById('container').appendChild(button);
+                } else {
+                    console.error('Unable to pay using Google Pay');
+                }
+            })
+            .catch(function(err) {
+                console.error('Error determining readiness to use Google Pay:', err);
+            });
+        }
+
+        function onGooglePayButtonClicked(paymentsClient, paymentDataRequest) {
+            paymentsClient.loadPaymentData(paymentDataRequest)
+            .then(function(paymentData) {
+                // Handle payment success
+                processPayment(paymentData);
+            })
+            .catch(function(err) {
+                console.error('Error loading payment data:', err);
+            });
+        }
+
+        function processPayment(paymentData) {
+            // TODO: Send paymentData to your server for processing
+
+            // Simulate payment processing
+            console.log('Payment successful', paymentData);
+            goToSection('post-purchase');
+        }
+
+        // Dynamically load the Google Pay API script
+        function loadGooglePayScript() {
+            const script = document.createElement('script');
+            script.src = "https://pay.google.com/gp/p/js/pay.js";
+            script.async = true;
+            document.head.appendChild(script);
+        }
+
+        loadGooglePayScript();
+    </script>
+</body>
+</html>
