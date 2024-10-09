@@ -1,4 +1,4 @@
-
+//hi
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -56,9 +56,9 @@ app.get('/googlepay', (req, res) => {
 
 // Serve paypal.ejs when accessing /paypal
 app.get('/paypal', (req, res) => {
-  res.render('paypal', { 
-    price: 4.99, 
-    total: 4.99, 
+  res.render('paypal', {
+    price: 4.99,
+    total: 4.99,
     clientId: process.env.PAYPAL_CLIENT_ID // Pass the PayPal client ID dynamically
   });
 });
